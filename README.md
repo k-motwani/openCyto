@@ -5,6 +5,28 @@ openCyto [<img src="logo_mid.png"/>](http://github.com/RGLab/openCyto)
 An R package that providing an automated data analysis pipeline for flow cytometry.
 
 
+## INSTALLATION
+
+CytoML can be installed in several ways:
+
+### For all versions:
+
+For all versions, you must have dependencies installed
+
+```r
+library(BiocManager)
+# This should pull all dependencies for release version of `openCyto`.
+BiocManager::install("openCyto") 
+
+# Then install latest dependencies from github, using devtools.
+install.packages("devtools") 
+library(devtools) #load it
+install_github("k-motwani/openCyto", version = "RGLab")
+
+# Or, if you use renv (preferred, personally):
+renv::install("k-motwani/openCyto@RGLab")
+```
+
 ### Reporting Bugs or Issues
 - Use the issue template in github when creating a new issue. 
 - Follow the instructions in the template (do your background reading).
