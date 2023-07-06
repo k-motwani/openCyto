@@ -93,10 +93,10 @@ gt_gating.gatingTemplate <- function(x, y, ...) {
     if(substr(stop.at, 1,1) != "/")
       stop.pat <- paste0("/", stop.pat) #prepend path delimiter to avoid partial node name matching
     
-    matchInd <- grep(stop.pat, nodePaths)
-    if(length(matchInd) == 0)
+    idx <- grep(stop.pat, nodePaths)
+    if(length(idx) == 0)
       stop("Can't find stop point: ", stop.at)
-    else if(length(matchInd) > 1)
+    else if(length(idx) > 1)
       stop("ambiguous stop point: ", stop.at)
   }
   # gate each node 
@@ -109,7 +109,7 @@ gt_gating.gatingTemplate <- function(x, y, ...) {
     start.pat <- paste0(start.pat, "$") #treat it as terminal node
     if(substr(start, 1,1) != "/")
       start.pat <- paste0("/", start.pat) #prepend path delimiter to avoid partial node name matching
-    matchInd <- grep(start.pat, nodePaths)
+    matchInd <- grep(start.pat, gt_nodes)
     
     if(length(matchInd) == 0)
       stop("Can't find start point: ", start)
@@ -384,16 +384,19 @@ roxygen_parameter <- function() {
           popAlias <- NULL  
       }
     }
-
+    
     # For gate_quad methods, need to filter down to just the gates that were asked for
     if(names(x) %in% c("quadGate.seq", "gate_quad_sequential", "quadGate.tmix", "gate_quad_tmix")){
       pops <- gtPop@name
-      pops <- gsub("([\\+-])([^/$])", "\\1&\\2", pops)
-      pops <- strsplit(pops, "&")[[1]]
-      pops <- strsplit(pops, "/")
-      pops <- paste0(rep(pops[[1]], each=length(pops[[2]])), pops[[2]])
-      pops <- match(pops, c("-+", "++", "+-", "--"))
-      flist <- lapply(flist, function(sublist) filters(sublist[pops]))
+      # keep all populations when pop = *
+      if(!all(pops == "*")) {
+        pops <- gsub("([\\+-])([^/$])", "\\1&\\2", pops)
+        pops <- strsplit(pops, "&")[[1]]
+        pops <- strsplit(pops, "/")
+        pops <- paste0(rep(pops[[1]], each=length(pops[[2]])), pops[[2]])
+        pops <- match(pops, c("-+", "++", "+-", "--"))
+        flist <- lapply(flist, function(sublist) filters(sublist[pops]))
+      }
     }
     
     gs_node_id <- gs_pop_add(y, flist, parent = parent, name = popAlias, validityCheck = FALSE, negated = negated)
@@ -598,7 +601,10 @@ gt_gating.dummyMethod <- function(x, y, ...) {
         
         
         if(nDims==2){
-          negated_2d_gate <- TRUE 
+          if (popName == "-") {
+            negated_2d_gate <- TRUE                             
+            }
+          
           fres <- glist[[1]]
         }else{
           dim_params <-  getChannelMarker(fr, dims)["name"]
